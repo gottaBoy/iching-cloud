@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  elasticsearch:
+    image: elasticsearch:6.4.1
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - cluster.name=elasticsearch
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms216m -Xmx216m"
+      - node.name=elasticsearch_node_1
+      - "TZ=Asia/Shanghai"
+    volumes:
+      - /iching/elasticsearch/data:/usr/share/elasticsearch/data
+      - /iching/elasticsearch/logs:/usr/share/elasticsearch/logs
+      - /iching/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  skywalking-oap:
+    image: apache/skywalking-oap-server:6.4.0
+    container_name: skywalking-oap
+    depends_on:
+      - elasticsearch
+    links:
+      - elasticsearch
+    restart: always
+    ports:
+      - 11800:11800
+      - 12800:12800
+    environment:
+      - "TZ=Asia/Shanghai"
+    volumes:
+      - /iching/skywalking/config:/apache-skywalking-apm-bin/config:ro
+
+  skywalking-ui:
+    image: apache/skywalking-ui:6.4.0
+    container_name: skywalking-ui
+    depends_on:
+      - skywalking-oap
+    links:
+      - skywalking-oap
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - "collector.ribbon.listOfServers=skywalking-oap:12800"
+      - "TZ=Asia/Shanghai"

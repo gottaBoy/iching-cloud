@@ -1,0 +1,17 @@
+spring:
+    profiles.active: dev
+    application.name: swagger2markup-doc
+    jackson.serialization.indent_output: true
+
+server:
+    port: 9080
+
+management:
+    contextPath: /management
+    add-application-context-header: false
+
+info:
+    name: ${spring.application.name}
+    description: Swagger2Markup doc
+    environment: ${spring.profiles.active}
+    version: 1.0.0

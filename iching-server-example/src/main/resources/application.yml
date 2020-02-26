@@ -1,0 +1,73 @@
+server:
+  port: 8301
+
+spring:
+  application:
+    name: iching-server-example
+  boot:
+    admin:
+      client:
+        url: http://${iching-monitor-admin}:8401
+        username: iching
+        password: 123456
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceAutoConfiguration
+#  datasource:
+#    dynamic:
+#      p6spy: true
+#      hikari:
+#        connection-timeout: 30000
+#        max-lifetime: 1800000
+#        max-pool-size: 15
+#        min-idle: 5
+#        connection-test-query: select 1
+#        pool-name: FebsHikariCP
+#      primary: base
+#      datasource:
+#        base:
+#          username: root
+#          password: my81527
+#          driver-class-name: com.mysql.cj.jdbc.Driver
+#          url: jdbc:mysql://${mysql.url}:3306/febs_cloud_base?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  shareSecurityContext: true
+
+security:
+  oauth2:
+    resource:
+      id: ${spring.application.name}
+      user-info-uri: http://${iching-gateway}:8101/auth/user
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: "@project.description@"
+    version: "@project.version@"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 20
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    instance-info-replication-interval-seconds: 30
+    registry-fetch-interval-seconds: 3
+    serviceUrl:
+      defaultZone: http://iching:123456@${iching-discovery}:8761/discovery/eureka/
+
+logging:
+  level:
+    org.springframework.security: DEBUG

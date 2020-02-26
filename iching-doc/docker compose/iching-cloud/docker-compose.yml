@@ -1,0 +1,105 @@
+version: '3'
+
+services:
+  iching-monitor-admin:
+    image: iching-monitor-admin:latest
+    container_name: iching-monitor-admin
+    volumes:
+      - "/iching/log:/log"
+    command:
+      - "--nacos.url=127.0.0.1"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8401:8401
+    restart: on-failure
+  iching-gateway:
+    image: iching-gateway:latest
+    container_name: iching-gateway
+    volumes:
+      - "/iching/log:/log"
+    command:
+      - "--iching-monitor-admin=127.0.0.1"
+      - "--nacos.url=127.0.0.1"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8301:8301
+    restart: on-failure
+  iching-auth:
+    image: iching-auth:latest
+    container_name: iching-auth
+    volumes:
+      - "/iching/log:/log"
+    command:
+      - "--iching-monitor-admin=127.0.0.1"
+      - "--nacos.url=127.0.0.1"
+      - "--mysql.url=127.0.0.1"
+      - "--redis.url=127.0.0.1"
+      - "--spring.profiles.active=prod"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8101:8101
+    restart: on-failure
+  iching-server-system:
+    image: iching-server-system:latest
+    container_name: iching-server-system
+    volumes:
+      - "/iching/log:/log"
+    command:
+      - "--iching-monitor-admin=127.0.0.1"
+      - "--iching-gateway=127.0.0.1"
+      - "--nacos.url=127.0.0.1"
+      - "--mysql.url=127.0.0.1"
+      - "--rabbitmq.url=127.0.0.1"
+      - "--spring.profiles.active=prod"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8201:8201
+    restart: on-failure
+  iching-server-test:
+    image: iching-server-test:latest
+    container_name: iching-server-test
+    volumes:
+      - "/iching/log:/log"
+    command:
+      - "--rabbitmq.url=127.0.0.1"
+      - "--nacos.url=127.0.0.1"
+      - "--iching-monitor-admin=127.0.0.1"
+      - "--iching-gateway=127.0.0.1"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8202:8202
+    restart: on-failure
+  zipkin-server:
+    image: zipkin-server
+    container_name: zipkin-server
+    command:
+      - "--server.port=8402"
+      - "--zipkin.storage.type=mysql"
+      - "--zipkin.storage.mysql.db=iching_cloud_base"
+      - "--zipkin.storage.mysql.username=root"
+      - "--zipkin.storage.mysql.password=123456"
+      - "--zipkin.storage.mysql.host=127.0.0.1"
+      - "--zipkin.storage.mysql.port=3306"
+      - "--zipkin.collector.rabbitmq.addresses=127.0.0.1:5672"
+      - "--zipkin.collector.rabbitmq.username=iching"
+      - "--zipkin.collector.rabbitmq.password=123456"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 8402:8402
+    restart: on-failure
+  iching-cloud-web:
+    image: iching-cloud-web
+    container_name: iching-cloud-web
+    volumes:
+      - "/iching/log:/log"
+    environment:
+      - "TZ=Asia/Shanghai"
+    ports:
+      - 9527:80
+    restart: on-failure

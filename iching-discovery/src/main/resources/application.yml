@@ -1,0 +1,43 @@
+server:
+  port: 8761
+  servlet:
+    context-path: /discovery
+
+spring:
+  application:
+    name: iching-discovery
+  security:
+    user:
+      name: iching
+      password: 123456
+  boot:
+    admin:
+      client:
+        url: http://${iching-monitor-admin}:8401
+        username: iching
+        password: 123456
+info:
+  app:
+    name: ${spring.application.name}
+    description: "@project.description@"
+    version: "@project.version@"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+
+eureka:
+  instance:
+    hostname: ${iching-discovery}
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    instance-info-replication-interval-seconds: 30
+    serviceUrl:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${iching-discovery}:${server.port}${server.servlet.context-path}/eureka/
+

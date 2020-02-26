@@ -1,0 +1,133 @@
+server:
+  port: 8101
+
+spring:
+  application:
+    name: iching-gateway
+  security:
+    user:
+      name: iching
+      password: 123456
+  boot:
+    admin:
+      client:
+        url: http://${iching-monitor-admin}:8401
+        username: iching
+        password: 123456
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration,com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceAutoConfiguration
+#  datasource:
+#    dynamic:
+#      hikari:
+#        connection-timeout: 30000
+#        max-lifetime: 1800000
+#        max-pool-size: 15
+#        min-idle: 5
+#        connection-test-query: select 1
+#        pool-name: IchingHikariCP
+#      primary: base
+#      datasource:
+#        base:
+#          username: root
+#          password: my81527
+#          driver-class-name: com.mysql.cj.jdbc.Driver
+#          url: jdbc:mysql://${mysql.url}:3306/febs_cloud_base?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2b8
+#  cloud:
+#    gateway:
+#      globalcors:
+#        corsConfigurations:
+#          '[/**]':
+#            allowedOrigins: "*"
+#            allowedMethods: "*"
+#            allowedHeaders: "*"
+#            allowCredentials: true
+#      routes:
+#        - id: iching-auth
+#          uri: lb://iching-auth
+#          predicates:
+#            - Path=/auth/**
+#          filters:
+#            - name: Hystrix
+#              args:
+#                name: authfallback
+#                fallbackUri: forward:/fallback/iching-auth
+
+#hystrix:
+#  command:
+#    default:
+#      execution:
+#        isolation:
+#          thread:
+#            timeoutInMilliseconds: 3000
+#    socialfallback:
+#      execution:
+#        isolation:
+#          thread:
+#            timeoutInMilliseconds: 60000
+
+zuul:
+#  SendErrorFilter:
+#    error:
+#      disable: true
+  host:
+    connect-timeout-millis: 3000
+    socket-timeout-millis: 3000
+  semaphore:
+    max-semaphores: 200
+  routes:
+    auth:
+      path: /auth/**
+      serviceId: iching-auth
+      sensitiveHeaders: "*"
+    system:
+      path: /system/**
+      serviceId: iching-server-system
+      sensitiveHeaders: "*"
+    example:
+      path: /example/**
+      serviceId: iching-server-example
+      sensitiveHeaders: "*"
+  retryable: true
+  ignored-services: "*"
+  ribbon:
+    eager-load:
+      enabled: true
+
+ribbon:
+  ReadTimeout: 3000
+  ConnectTimeout: 3000
+
+#关闭超时时间
+hystrix:
+  command:
+    default:
+      execution:
+#        timeout:
+#          enabled: false
+        isolation:
+          thread:
+            timeout-in-milliseconds: 3000
+
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 20
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    instance-info-replication-interval-seconds: 30
+    registry-fetch-interval-seconds: 3
+    serviceUrl:
+      defaultZone: http://${spring.security.user.name}:${spring.security.user.password}@${iching-discovery}:8761/discovery/eureka/
+
+logging:
+  level:
+    org.springframework.security: DEBUG
